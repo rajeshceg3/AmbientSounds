@@ -1,10 +1,7 @@
 // src/AudioController.js
 
 const soundSources = [
-  { name: 'Rain', url: '/audio/rain.mp3' }, // Replace with actual URLs
-  { name: 'Ocean Waves', url: '/audio/ocean_waves.mp3' },
-  { name: 'Forest', url: '/audio/forest_sounds.mp3' },
-  { name: 'White Noise', url: '/audio/white_noise.mp3' },
+  { name: 'Peaceful And Relaxing', url: '/audio/fesliyan_peaceful_relaxing.mp3' },
 ];
 
 class AudioController {
