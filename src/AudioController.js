@@ -16,6 +16,8 @@ class AudioController {
     this.selectedSound = null; // Name of the currently selected sound
     this.isLoading = false;
     this.preloadPromise = null; // For preloading all sounds
+    this.gainNode = null;
+    this.volume = 0.75; // Default volume, will be overridden by settings
 
     // US-003: Volume is normalized across all sound options (handled by consistent mastering of audio files)
     // We can also add a gain node for overall volume control later if needed.
@@ -36,6 +38,12 @@ class AudioController {
     try {
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
       console.log('AudioContext initialized.');
+
+      // Setup GainNode for volume control
+      this.gainNode = this.audioContext.createGain();
+      this.gainNode.gain.value = this.volume;
+      this.gainNode.connect(this.audioContext.destination);
+
       // Preload all sounds once context is ready
       await this.preloadAllSounds();
     } catch (error) {
@@ -134,7 +142,7 @@ class AudioController {
     this.currentSourceNode = this.audioContext.createBufferSource();
     this.currentSourceNode.buffer = buffer;
     this.currentSourceNode.loop = true; // US-003: Sounds loop seamlessly
-    this.currentSourceNode.connect(this.audioContext.destination);
+    this.currentSourceNode.connect(this.gainNode); // Connect to gain node instead of destination
 
     // US-003: Sounds begin playing within 2 seconds of selection (Web Audio API is fast)
     this.currentSourceNode.start(0); // Start immediately
@@ -173,6 +181,31 @@ class AudioController {
 
   getSoundNames() {
     return soundSources.map(s => s.name);
+  }
+
+  // Volume Control
+  setVolume(volume) {
+    this.volume = Math.max(0, Math.min(1, volume)); // Clamp between 0 and 1
+    if (this.gainNode) {
+      // Using setValueAtTime for smoother transitions if called rapidly, though for typical UI slider not critical
+      this.gainNode.gain.setValueAtTime(this.volume, this.audioContext.currentTime);
+    }
+    console.log(`AudioController: Volume set to ${this.volume}`);
+  }
+
+  getVolume() {
+    return this.volume;
+  }
+
+  // Get Current State
+  // type AudioState = { isPlaying: boolean, currentSound: string | null, volume: number, isLoading: boolean };
+  getState() {
+    return {
+      isPlaying: this.isPlaying,
+      currentSound: this.selectedSound,
+      volume: this.getVolume(),
+      isLoading: this.isLoading,
+    };
   }
 }
 

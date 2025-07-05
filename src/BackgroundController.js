@@ -33,8 +33,10 @@ class BackgroundController {
   constructor(element) {
     this.element = element;
     this.palettes = calmingColorPalettes;
-    this.currentIndex = 0;
-    this.transitionDuration = 45000; // 45 seconds, within 30-60s range
+    this.currentIndex = 0; // This property doesn't seem to be used, consider removing if not planned.
+    this.lastPaletteIndex = -1; // Initialize lastPaletteIndex
+    this.baseTransitionDuration = 45000; // 45 seconds, within 30-60s range
+    this.transitionDuration = this.baseTransitionDuration;
     this.timeoutId = null;
 
     if (!this.element) {
@@ -43,7 +45,19 @@ class BackgroundController {
   }
 
   getRandomPalette() {
-    const randomIndex = Math.floor(Math.random() * this.palettes.length);
+    if (this.palettes.length === 0) {
+      return { name: 'Default', color: '#2E4057' }; // Fallback
+    }
+    if (this.palettes.length === 1) {
+      return this.palettes[0]; // Only one color, no choice
+    }
+
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * this.palettes.length);
+    } while (randomIndex === this.lastPaletteIndex); // Keep trying if it's the same as the last one
+
+    this.lastPaletteIndex = randomIndex;
     return this.palettes[randomIndex];
   }
 
@@ -84,6 +98,34 @@ class BackgroundController {
     } else {
       this.start();
     }
+  }
+
+  setSpeed(speedFactor) {
+    if (speedFactor <= 0) {
+      console.warn('BackgroundController: Speed factor must be positive.');
+      return;
+    }
+    this.transitionDuration = this.baseTransitionDuration / speedFactor;
+    console.log(`BackgroundController: Transition duration set to ${this.transitionDuration}ms`);
+    // If a cycle is currently timed out, clear and restart it with the new duration
+    if (this.timeoutId) {
+      this.stop(); // Clears timeout
+      this.start(); // Restarts with new duration (will call cycleColor)
+    }
+  }
+
+  getCurrentColors() { // Renamed from getCurrentColorPalette and adapted to return string[]
+    const currentPalette = this.palettes[this.lastPaletteIndex];
+    if (currentPalette) {
+      return [currentPalette.color]; // Return array with single color string
+    }
+    // Before any color is set, or if reduced motion has a specific static color not from random palettes:
+    // Check the actual style applied to the element.
+    if (this.element && this.element.style.backgroundColor) {
+       return [this.element.style.backgroundColor]; // Return the actual current style
+    }
+    // Fallback if no color information is available (e.g., before start or if element is gone)
+    return [this.palettes.length > 0 ? this.palettes[0].color : '#2E4057']; // Default to first palette or a hardcoded default
   }
 }
 

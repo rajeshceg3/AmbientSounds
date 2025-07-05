@@ -46,7 +46,7 @@ html, body {
   align-items: center;
   gap: 15px; /* Space between controls */
   padding: 20px;
-  background-color: rgba(0, 0, 0, 0.3); /* Subtle background for readability */
+  background-color: rgba(0, 0, 0, 0.6); /* Darker background for better contrast */
   border-radius: 12px;
   z-index: 10; /* Ensure controls are above background */
   opacity: 1; /* Start visible */
@@ -79,6 +79,26 @@ html, body {
    - opacity transitions from 0 to 1 over 0.5s
    This seems fine.
 */
+
+/* Styling for individual control groups like checkbox with label */
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Space between checkbox and label */
+  color: white; /* Assuming other control text is white */
+  padding: 5px 0; /* Add some vertical padding */
+}
+
+.control-group label {
+  font-size: 0.9rem; /* Slightly smaller or match other text */
+  cursor: pointer;
+}
+
+#reduced-motion-toggle {
+  cursor: pointer;
+  /* Consider custom styling for the checkbox itself if needed,
+     but browser defaults might be acceptable for now. */
+}
 
 .controls button,
 .controls select {
