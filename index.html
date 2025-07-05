@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ambient Mood</title>
+    <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+    <div id="app">
+        <div class="background-shifter"></div>
+        <div class="controls">
+            <button id="play-pause-btn" aria-label="Play or pause audio">Play</button>
+            <select id="sound-select" aria-label="Select ambient sound">
+                <option value="rain">Rain</option>
+                <option value="ocean">Ocean Waves</option>
+                <option value="forest">Forest</option>
+                <option value="whitenoise">White Noise</option>
+            </select>
+        </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
