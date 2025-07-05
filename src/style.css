@@ -1,0 +1,178 @@
+/* Basic Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* To prevent scrollbars from visual elements */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex; /* Optional: for centering controls if needed later */
+  justify-content: center; /* Optional: for centering controls */
+  align-items: center; /* Optional: for centering controls */
+}
+
+.background-shifter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Behind other content */
+  background-color: #2b2b2b; /* Initial background */
+  /* US-001: Transitions are smooth with no jarring changes */
+  /* US-002: Color changes are subtle and gradual */
+  /* The transition duration here should be shorter than JS timer,
+     allowing JS to control *when* a change starts, and CSS to control *how* it animates.
+     A 5-10 second CSS transition is usually pleasant.
+  */
+  transition: background-color 10s ease-in-out;
+  /* US-001: Background covers entire viewport regardless of screen size - already handled by width/height 100% */
+}
+
+.controls {
+  position: fixed; /* Use fixed to position relative to viewport, good for controls */
+  display: flex;
+  flex-direction: column; /* Default: stack vertically */
+  align-items: center;
+  gap: 15px; /* Space between controls */
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.3); /* Subtle background for readability */
+  border-radius: 12px;
+  z-index: 10; /* Ensure controls are above background */
+  opacity: 1; /* Start visible */
+  visibility: visible;
+  /* US-005: Smooth fade-in/fade-out animations for UI elements */
+  transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s;
+  /* Delay visibility transition until opacity is 0 to prevent interaction with invisible elements */
+  will-change: opacity; /* Hint for browser optimization */
+  /* US-006: REVIEW_NOTE: Test control positioning and usability during orientation changes on mobile/tablet.
+     Ensure controls remain accessible and layout doesn't break.
+     Current fixed positioning with bottom alignment should be fairly robust. */
+}
+
+.controls.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s;
+  /* When hiding, visibility changes after opacity transition. */
+  /* When showing, opacity changes, then visibility changes immediately if needed.
+     For showing, we'd remove .hidden, so visibility becomes visible instantly,
+     then opacity transitions from 0 to 1 over 0.5s.
+     Let's adjust for showing:
+     transition: opacity 0.5s ease-in-out; (visibility will be handled by class add/remove)
+     No, the original is better for preventing interaction when hidden.
+  */
+}
+/* Re-check transition for showing:
+   When .hidden is removed:
+   - visibility becomes 'visible' (no transition needed or from 0s linear 0s)
+   - opacity transitions from 0 to 1 over 0.5s
+   This seems fine.
+*/
+
+.controls button,
+.controls select {
+  font-family: inherit; /* Use system fonts as per PRD */
+  font-size: 1rem; /* Base font size */
+  padding: 12px 20px; /* Generous padding */
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  cursor: pointer;
+  min-width: 150px; /* Ensure decent width */
+  text-align: center;
+  /* US-006: REVIEW_NOTE: Verify touch target sizes (min 44px for tablet, 48px for mobile)
+     are effectively met on various devices. Current padding and min-height aim for this. */
+}
+
+#play-pause-btn {
+  background-color: rgba(255, 255, 255, 0.2); /* Light, transparent background */
+  color: white;
+  /* Minimal drop shadows for depth (PRD 2.3.1 Desktop) */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+#play-pause-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+#sound-select {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white; /* Text color for select */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+#sound-select option {
+  background-color: #333; /* Background for dropdown options */
+  color: white;
+}
+
+/* Desktop Layout (1024px+) - PRD 2.3.1 */
+@media (min-width: 1024px) {
+  .controls {
+    /* Centered control panel (max 400px width) */
+    /* Controls positioned in lower third of screen */
+    left: 50%;
+    bottom: 15%; /* Lower third */
+    transform: translateX(-50%);
+    max-width: 400px;
+    width: auto; /* Allow it to shrink if content is smaller */
+    flex-direction: row; /* Arrange horizontally on desktop */
+    gap: 20px;
+    /* US-001/US-006: REVIEW_NOTE: Visually confirm elegance of typography and drop shadows on desktop. */
+  }
+}
+
+/* Tablet Layout (768px - 1023px) - PRD 2.3.1 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* US-006: REVIEW_NOTE: Test on various tablet sizes, portrait and landscape. */
+  .controls {
+    left: 50%;
+    bottom: 10%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px; /* Slightly wider for tablet */
+    flex-direction: row; /* Horizontal on tablet too */
+    gap: 15px;
+  }
+  .controls button,
+  .controls select {
+    padding: 15px 25px; /* Slightly larger touch targets (min 44px height implicitly) */
+    font-size: 1.1rem;
+    min-height: 44px;
+  }
+}
+
+/* Mobile Layout (320px - 767px) - PRD 2.3.1 */
+@media (max-width: 767px) {
+  .controls {
+    /* Bottom-positioned controls for thumb accessibility */
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%; /* Take more width on mobile */
+    max-width: none; /* Allow full specified width */
+    flex-direction: column; /* Stack vertically on mobile */
+    padding: 15px;
+    gap: 12px;
+    /* US-006: REVIEW_NOTE: Test on various mobile sizes (320px up to 767px), portrait and landscape.
+       Confirm thumb accessibility of bottom-positioned controls. */
+  }
+  .controls button,
+  .controls select {
+    width: 100%; /* Full width buttons/select for easier tapping */
+    padding: 18px 20px; /* Larger touch targets (min 48px height implicitly) */
+    font-size: 1.1rem;
+    min-height: 48px;
+    /* US-006: REVIEW_NOTE: Ensure these full-width controls are easy to tap. */
+  }
+}
