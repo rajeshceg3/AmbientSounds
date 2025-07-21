@@ -96,7 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
       firstInteractionTime = performance.now();
       console.log(`Performance: First user interaction (play/pause) at ${(firstInteractionTime - pageLoadStart).toFixed(2)} ms (relative to script start)`);
     }
-    await initializeAudio(); // Ensure audio context is ready
+    try {
+      await initializeAudio(); // Ensure audio context is ready
+    } catch (error) {
+      // Error is already logged in initializeAudio, but we stop execution here.
+      return;
+    }
     if (!audioInitialized) return;
 
     const selectedSoundName = uiController.soundSelect.value || initialSound;
@@ -119,7 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
       firstInteractionTime = performance.now();
       console.log(`Performance: First user interaction (sound select) at ${(firstInteractionTime - pageLoadStart).toFixed(2)} ms (relative to script start)`);
     }
-    await initializeAudio();
+    try {
+      await initializeAudio();
+    } catch (error) {
+      return; // Stop if audio initialization fails
+    }
     if (!audioInitialized) return;
 
     const newSoundName = event.target.value;

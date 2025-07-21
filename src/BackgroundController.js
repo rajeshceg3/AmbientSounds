@@ -71,6 +71,7 @@ class BackgroundController {
   cycleColor() {
     const newPalette = this.getRandomPalette();
     this.applyColor(newPalette);
+    this.lastCycleTime = Date.now();
 
     // Loop
     this.timeoutId = setTimeout(() => this.cycleColor(), this.transitionDuration);
@@ -105,13 +106,18 @@ class BackgroundController {
       console.warn('BackgroundController: Speed factor must be positive.');
       return;
     }
+
+    const elapsed = Date.now() - (this.lastCycleTime || Date.now());
     this.transitionDuration = this.baseTransitionDuration / speedFactor;
-    console.log(`BackgroundController: Transition duration set to ${this.transitionDuration}ms`);
-    // If a cycle is currently timed out, clear and restart it with the new duration
+    const remaining = Math.max(0, this.transitionDuration - elapsed);
+
+    console.log(`BackgroundController: Speed adjusted. New duration: ${this.transitionDuration}ms. Remaining time for current transition: ${remaining}ms.`);
+
     if (this.timeoutId) {
-      this.stop(); // Clears timeout
-      this.start(); // Restarts with new duration (will call cycleColor)
+      clearTimeout(this.timeoutId);
     }
+
+    this.timeoutId = setTimeout(() => this.cycleColor(), remaining);
   }
 
   getCurrentColors() { // Renamed from getCurrentColorPalette and adapted to return string[]

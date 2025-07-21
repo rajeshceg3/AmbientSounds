@@ -15,6 +15,7 @@
     "cypress:run": "cypress run"
   },
   "devDependencies": {
+    "jest-environment-jsdom": "^30.0.4",
     "vite": "^5.0.0"
   }
 }
