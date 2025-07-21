@@ -124,6 +124,14 @@ class UIController {
         this._resetActivityTimer(); // Restart hide timer when focus leaves controls
     });
 
+    this.controlsElement.addEventListener('mouseenter', () => {
+        if (this.activityTimer) clearTimeout(this.activityTimer);
+    });
+
+    this.controlsElement.addEventListener('mouseleave', () => {
+        this._resetActivityTimer();
+    });
+
     this._resetActivityTimer(); // Initial timer setup
   }
 

@@ -30,23 +30,27 @@ class AudioController {
 
   // Initialize the AudioContext (must be called after a user interaction)
   async init() {
-    if (this.audioContext) return;
+    if (this.audioContext || this.initPromise) return this.initPromise;
 
-    try {
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      console.log('AudioContext initialized.');
+    this.initPromise = (async () => {
+      try {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        console.log('AudioContext initialized.');
 
-      // Setup GainNode for volume control
-      this.gainNode = this.audioContext.createGain();
-      this.gainNode.gain.value = this.volume;
-      this.gainNode.connect(this.audioContext.destination);
+        // Setup GainNode for volume control
+        this.gainNode = this.audioContext.createGain();
+        this.gainNode.gain.value = this.volume;
+        this.gainNode.connect(this.audioContext.destination);
 
-      // Preload all sounds once context is ready
-      await this.preloadAllSounds();
-    } catch (error) {
-      console.error('Failed to initialize AudioContext:', error);
-      throw new Error('Audio system could not be initialized. User interaction might be required.');
-    }
+        // Preload all sounds once context is ready
+        await this.preloadAllSounds();
+      } catch (error) {
+        console.error('Failed to initialize AudioContext:', error);
+        this.initPromise = null; // Reset for future attempts
+        throw new Error('Audio system could not be initialized. User interaction might be required.');
+      }
+    })();
+    return this.initPromise;
   }
 
   async loadSound(soundName, soundUrl) {
