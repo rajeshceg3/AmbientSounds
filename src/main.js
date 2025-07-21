@@ -41,17 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('Background shifter element not found. Visuals will not work.');
   }
 
-  // AppContext holds all controllers. UIController is last as it might need others.
-  // However, the current UIController queries its own DOM elements and doesn't strictly need appContext in constructor.
-  window.appContext = {
+  const appContext = {
     settingsController,
     audioController,
-    backgroundController, // Might be undefined if element not found
-    // uiController will be added below
+    backgroundController,
+    uiController: null, // Initialize with null
   };
 
-  const uiController = new UIController(window.appContext);
-  window.appContext.uiController = uiController; // Add UIController to appContext
+  const uiController = new UIController(appContext);
+  appContext.uiController = uiController; // Add UIController to appContext
 
   // Set initial volume from settings
   const initialVolume = settingsController.getVolume();
@@ -125,7 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const newSoundName = event.target.value;
     settingsController.set('selectedSound', newSoundName); // Save selection
     console.log(`Sound selected via UI: ${newSoundName}`);
-    await audioController.play(newSoundName); // Play the new sound
+    if (audioController.isPlaying) {
+      await audioController.play(newSoundName); // Play the new sound
+    }
     uiController.updatePlayButtonState(audioController.isPlaying);
   }
 

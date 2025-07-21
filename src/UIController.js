@@ -2,6 +2,7 @@
 class UIController {
   constructor(appContext) {
     this.appContext = appContext; // To access other controllers if needed
+    this.spacebarListenerAttached = false; // Add this line
 
     // Query DOM elements
     this.playPauseBtn = document.getElementById('play-pause-btn');
@@ -144,6 +145,7 @@ class UIController {
   }
 
   bindGlobalSpacebar(callback) {
+    if (this.spacebarListenerAttached) return;
      // Listen on the document body or a main application container.
     document.addEventListener('keydown', (event) => {
         const targetTagName = event.target.tagName.toLowerCase();
@@ -159,6 +161,7 @@ class UIController {
             }
         }
     });
+    this.spacebarListenerAttached = true;
   }
 }
 export default UIController;

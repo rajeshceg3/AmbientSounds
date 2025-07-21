@@ -1,6 +1,6 @@
 // jest.config.cjs
 module.exports = {
-  testEnvironment: 'jsdom',
+  testEnvironment: 'jest-environment-jsdom',
   roots: ['<rootDir>/src'],
   setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'], // For DOM matchers
   // If main.js or other files use CSS imports that Jest can't handle:

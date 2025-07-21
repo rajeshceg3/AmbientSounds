@@ -167,7 +167,7 @@ class AudioController {
   }
 
   // This method will effectively restart the sound or play the new one.
-  // True resume at exact spot is more complex.
+  // True resume at exact spot is more complex and not implemented in this version.
   resume() {
     if (!this.isPlaying && this.selectedSound) {
       console.log(`Resuming: ${this.selectedSound}`);

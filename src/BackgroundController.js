@@ -33,7 +33,6 @@ class BackgroundController {
   constructor(element) {
     this.element = element;
     this.palettes = calmingColorPalettes;
-    this.currentIndex = 0; // This property doesn't seem to be used, consider removing if not planned.
     this.lastPaletteIndex = -1; // Initialize lastPaletteIndex
     this.baseTransitionDuration = 45000; // 45 seconds, within 30-60s range
     this.transitionDuration = this.baseTransitionDuration;
@@ -55,7 +54,7 @@ class BackgroundController {
     let randomIndex;
     do {
       randomIndex = Math.floor(Math.random() * this.palettes.length);
-    } while (randomIndex === this.lastPaletteIndex); // Keep trying if it's the same as the last one
+    } while (this.palettes.length > 1 && randomIndex === this.lastPaletteIndex); // Keep trying if it's the same as the last one
 
     this.lastPaletteIndex = randomIndex;
     return this.palettes[randomIndex];
