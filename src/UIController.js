@@ -2,7 +2,7 @@
 class UIController {
   constructor(appContext) {
     this.appContext = appContext; // To access other controllers if needed
-    this.spacebarListenerAttached = false; // Add this line
+    this.spacebarListener = null;
 
     // Query DOM elements
     this.playPauseBtn = document.getElementById('play-pause-btn');
