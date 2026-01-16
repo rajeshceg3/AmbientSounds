@@ -14,8 +14,14 @@ jest.mock('./BackgroundController', () => {
 });
 
 // Mock AudioController
-const mockPlay = jest.fn(() => Promise.resolve());
-const mockPause = jest.fn();
+let mockIsPlayingState = false;
+const mockPlay = jest.fn(() => {
+    mockIsPlayingState = true;
+    return Promise.resolve();
+});
+const mockPause = jest.fn(() => {
+    mockIsPlayingState = false;
+});
 const mockAudioControllerInit = jest.fn(() => Promise.resolve());
 
 jest.mock('./AudioController', () => {
@@ -28,10 +34,12 @@ jest.mock('./AudioController', () => {
         init: mockAudioControllerInit,
         play: mockPlay,
         pause: mockPause,
-        isPlaying: false, // Controllable for tests
+        setVolume: jest.fn(),
+        get isPlaying() { return mockIsPlayingState; }, // Controllable for tests
+        set isPlaying(val) { mockIsPlayingState = val; },
         selectedSound: null,
         soundBuffers: new Map(),
-        getSoundNames: jest.fn(()_ => actualAudioController.soundSources.map(s => s.name)),
+        getSoundNames: jest.fn(() => actualAudioController.soundSources.map(s => s.name)),
         preloadAllSounds: jest.fn(() => Promise.resolve()),
       };
     }),
@@ -62,8 +70,12 @@ describe('main.js UI Logic', () => {
       <div id="app">
         <div class="background-shifter"></div>
         <div class="controls">
-          <button id="play-pause-btn" aria-label="Play or pause audio">Play</button>
+          <button id="play-pause-btn" aria-label="Play or pause audio">
+            <span class="material-symbols-rounded">play_arrow</span>
+          </button>
           <select id="sound-select" aria-label="Select ambient sound"></select>
+          <input type="range" id="volume-slider">
+          <input type="checkbox" id="reduced-motion-toggle">
         </div>
       </div>
     `;
@@ -74,8 +86,8 @@ describe('main.js UI Logic', () => {
     // Reset AudioController's internal state for tests
     const AudioController = require('./AudioController').default;
     const mockAudioInstance = AudioController.mock.instances[0];
+    mockIsPlayingState = false; // Reset state
     if (mockAudioInstance) {
-        mockAudioInstance.isPlaying = false;
         mockAudioInstance.selectedSound = null;
     }
     mockPlay.mockClear();
@@ -94,27 +106,33 @@ describe('main.js UI Logic', () => {
   describe('Audio Controls Interaction', () => {
     test('Play/Pause button click should toggle audio', async () => {
       await loadMainJs(); // Load main.js to attach event listeners
+      document.dispatchEvent(new Event('DOMContentLoaded')); // Trigger initialization
 
       // Simulate first click to play
       playPauseBtn.click();
       await Promise.resolve(); // Allow async operations in togglePlayPause to complete
+      await Promise.resolve();
+      await Promise.resolve();
 
       expect(mockAudioControllerInit).toHaveBeenCalled();
       expect(mockPlay).toHaveBeenCalled();
-      expect(playPauseBtn.textContent).toBe('Pause'); // Assuming play was successful
+      expect(playPauseBtn.querySelector('.material-symbols-rounded').textContent).toBe('pause');
 
       // Simulate second click to pause
-      const mockAudioInstance = require('./AudioController').default.mock.instances[0];
-      mockAudioInstance.isPlaying = true; // Simulate that audio is now playing
+      // play() already set isPlayingState to true
 
       playPauseBtn.click();
       await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
       expect(mockPause).toHaveBeenCalled();
-      expect(playPauseBtn.textContent).toBe('Play');
+      expect(playPauseBtn.querySelector('.material-symbols-rounded').textContent).toBe('play_arrow');
     });
 
     test('Sound select change should play new sound', async () => {
       await loadMainJs();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+
       const mockAudioInstance = require('./AudioController').default.mock.instances[0];
       const { soundSources } = require('./AudioController');
 
@@ -122,19 +140,24 @@ describe('main.js UI Logic', () => {
       soundSelect.value = soundSources[1].name;
       soundSelect.dispatchEvent(new Event('change'));
       await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
 
       expect(mockAudioControllerInit).toHaveBeenCalled();
       expect(mockPlay).toHaveBeenCalledWith(soundSources[1].name);
-      mockAudioInstance.isPlaying = true; // Assume play succeeded
-      expect(playPauseBtn.textContent).toBe('Pause');
+      // isPlayingState is true from mockPlay
+      expect(playPauseBtn.querySelector('.material-symbols-rounded').textContent).toBe('pause');
     });
 
     test('Spacebar press should toggle play/pause', async () => {
         await loadMainJs();
+        document.dispatchEvent(new Event('DOMContentLoaded'));
 
         // Simulate spacebar press
         document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space' }));
         await Promise.resolve(); // for async operations
+        await Promise.resolve();
+        await Promise.resolve();
 
         expect(mockAudioControllerInit).toHaveBeenCalled();
         expect(mockPlay).toHaveBeenCalled();
@@ -145,6 +168,7 @@ describe('main.js UI Logic', () => {
   describe('Controls Auto-Hide (US-005)', () => {
     test('Controls should become hidden after 10 seconds of inactivity', async () => {
       await loadMainJs(); // main.js initializes the timer
+      document.dispatchEvent(new Event('DOMContentLoaded'));
       expect(controlsElement).not.toHaveClass('hidden');
 
       jest.advanceTimersByTime(10000); // Advance timer by 10 seconds
@@ -153,6 +177,7 @@ describe('main.js UI Logic', () => {
 
     test('Controls should reappear on mousemove and timer reset', async () => {
       await loadMainJs();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
       jest.advanceTimersByTime(10000); // Hide controls
       expect(controlsElement).toHaveClass('hidden');
 

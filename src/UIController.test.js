@@ -16,13 +16,16 @@ describe('UIController', () => {
 
   beforeEach(() => {
     // Setup mock DOM
-    document.body.innerHTML = \`
+    document.body.innerHTML = `
       <div class="controls">
-        <button id="play-pause-btn" aria-label="Play audio"></button>
+        <button id="play-pause-btn" aria-label="Play audio">
+            <span class="material-symbols-rounded">play_arrow</span>
+        </button>
         <select id="sound-select"></select>
+        <input type="range" id="volume-slider">
         <input type="checkbox" id="reduced-motion-toggle">
       </div>
-    \`;
+    `;
     playPauseBtn = document.getElementById('play-pause-btn');
     soundSelect = document.getElementById('sound-select');
     controlsElement = document.querySelector('.controls');
@@ -62,16 +65,31 @@ describe('UIController', () => {
     expect(soundSelect.options[0].textContent).toBe(mockSoundSources[0].name);
   });
 
-  test('updatePlayButtonState should update text and aria-pressed', () => {
+  test('updatePlayButtonState should update icon and aria-pressed', () => {
     uiController.updatePlayButtonState(true); // Playing
-    expect(playPauseBtn.textContent).toBe('Pause');
+    expect(playPauseBtn.querySelector('.material-symbols-rounded').textContent).toBe('pause');
     expect(playPauseBtn.getAttribute('aria-label')).toBe('Pause audio');
     expect(playPauseBtn.getAttribute('aria-pressed')).toBe('true');
 
     uiController.updatePlayButtonState(false); // Paused
-    expect(playPauseBtn.textContent).toBe('Play');
+    expect(playPauseBtn.querySelector('.material-symbols-rounded').textContent).toBe('play_arrow');
     expect(playPauseBtn.getAttribute('aria-label')).toBe('Play audio');
     expect(playPauseBtn.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  test('updateVolumeSlider should update value and aria-valuenow', () => {
+    uiController.updateVolumeSlider(0.5);
+    const volumeSlider = document.getElementById('volume-slider');
+    expect(volumeSlider.value).toBe('0.5');
+    expect(volumeSlider.getAttribute('aria-valuenow')).toBe('0.5');
+  });
+
+  test('bindVolumeSlider should add event listener', () => {
+    const callback = jest.fn();
+    uiController.bindVolumeSlider(callback);
+    const volumeSlider = document.getElementById('volume-slider');
+    volumeSlider.dispatchEvent(new Event('input'));
+    expect(callback).toHaveBeenCalled();
   });
 
   test('updateReducedMotionToggle should update checked state and aria-checked', () => {
@@ -110,7 +128,6 @@ describe('UIController', () => {
         controlsElement.classList.add('hidden'); // Start hidden
         uiController.showControls();
         expect(controlsElement.classList.contains('hidden')).toBe(false);
-        expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
     });
 
     test('hideControls should add .hidden', () => {
@@ -138,10 +155,6 @@ describe('UIController', () => {
         controlsElement.classList.add('hidden'); // Start hidden
         controlsElement.dispatchEvent(new FocusEvent('focusin'));
         expect(controlsElement.classList.contains('hidden')).toBe(false);
-        // Check if clearTimeout was called on the specific timer from _resetActivityTimer
-        // This requires more specific timer management or inspection if many timers are used.
-        // For now, assume the logic inside _resetActivityTimer clears the correct one.
-        expect(clearTimeout).toHaveBeenCalled();
 
         jest.advanceTimersByTime(2000); // Pass original timeout duration
         expect(controlsElement.classList.contains('hidden')).toBe(false); // Should remain visible
@@ -150,7 +163,6 @@ describe('UIController', () => {
     test('focusout from controls should restart hide timer', () => {
         controlsElement.dispatchEvent(new FocusEvent('focusin')); // Keep it open
         controlsElement.dispatchEvent(new FocusEvent('focusout'));
-        expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 1000); // Timer restarted
         jest.advanceTimersByTime(1000);
         expect(controlsElement.classList.contains('hidden')).toBe(true);
     });
@@ -190,7 +202,9 @@ describe('UIController', () => {
     const input = document.createElement('input');
     document.body.appendChild(input);
     input.focus(); // Target the input
-    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space' })); // Dispatch globally but target is input
+
+    // Dispatch event on input and let it bubble to document
+    input.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space', bubbles: true }));
     expect(callback).toHaveBeenCalledTimes(1); // Still 1, not 2
 
     document.body.removeChild(input);

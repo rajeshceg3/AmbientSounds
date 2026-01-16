@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set initial volume from settings
   const initialVolume = settingsController.getVolume();
   audioController.setVolume(initialVolume);
+  uiController.updateVolumeSlider(initialVolume);
 
   // Initial UI setup
   uiController.populateSoundOptions(soundSources);
@@ -151,9 +152,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // No need to call uiController.showControls() here as UIController's initControlHiding handles focus/interaction
   }
 
+  function handleVolumeChange(event) {
+    if (!firstInteractionTime) {
+      firstInteractionTime = performance.now();
+      console.log(`Performance: First user interaction (volume change) at ${(firstInteractionTime - pageLoadStart).toFixed(2)} ms (relative to script start)`);
+    }
+    const newVolume = parseFloat(event.target.value);
+    audioController.setVolume(newVolume);
+    settingsController.set('volume', newVolume);
+    uiController.updateVolumeSlider(newVolume); // For styling updates if needed
+  }
+
   // Bind events using UIController
   uiController.bindPlayPauseButton(handlePlayPause);
   uiController.bindSoundSelect(handleSoundSelection);
+  uiController.bindVolumeSlider(handleVolumeChange);
   uiController.bindReducedMotionToggle(handleReducedMotionToggle);
   uiController.bindGlobalSpacebar(handlePlayPause); // Spacebar triggers play/pause
 

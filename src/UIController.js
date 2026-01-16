@@ -6,6 +6,7 @@ class UIController {
     // Query DOM elements
     this.playPauseBtn = document.getElementById('play-pause-btn');
     this.soundSelect = document.getElementById('sound-select');
+    this.volumeSlider = document.getElementById('volume-slider');
     this.controlsElement = document.querySelector('.controls');
     this.reducedMotionToggle = document.getElementById('reduced-motion-toggle');
     this.errorDisplayElement = null; // For displaying errors
@@ -32,9 +33,24 @@ class UIController {
 
   updatePlayButtonState(isPlaying) {
     if (!this.playPauseBtn) return;
-    this.playPauseBtn.textContent = isPlaying ? 'Pause' : 'Play';
+    const iconSpan = this.playPauseBtn.querySelector('.material-symbols-rounded');
+    if (iconSpan) {
+        iconSpan.textContent = isPlaying ? 'pause' : 'play_arrow';
+    } else {
+        // Fallback if icon span is missing
+        this.playPauseBtn.textContent = isPlaying ? 'Pause' : 'Play';
+    }
     this.playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause audio' : 'Play audio');
     this.playPauseBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+  }
+
+  updateVolumeSlider(volume) {
+    if (!this.volumeSlider) return;
+    this.volumeSlider.value = volume;
+    this.volumeSlider.setAttribute('aria-valuenow', volume);
+    // Update background size for range slider progress effect if using custom CSS that needs it
+    const percentage = volume * 100;
+    this.volumeSlider.style.backgroundSize = `${percentage}% 100%`;
   }
 
   updateReducedMotionToggle(isChecked) {
@@ -151,10 +167,15 @@ class UIController {
     this.reducedMotionToggle.addEventListener('change', callback);
   }
 
+  bindVolumeSlider(callback) {
+    if (!this.volumeSlider) return;
+    this.volumeSlider.addEventListener('input', callback);
+  }
+
   bindGlobalSpacebar(callback) {
      // Listen on the document body or a main application container.
     document.addEventListener('keydown', (event) => {
-        const targetTagName = event.target.tagName.toLowerCase();
+        const targetTagName = event.target.tagName ? event.target.tagName.toLowerCase() : '';
         if (targetTagName === 'input' || targetTagName === 'select' || targetTagName === 'textarea') {
             return;
         }
