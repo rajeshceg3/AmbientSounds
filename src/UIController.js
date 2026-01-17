@@ -40,6 +40,7 @@ class UIController {
         // Fallback if icon span is missing
         this.playPauseBtn.textContent = isPlaying ? 'Pause' : 'Play';
     }
+    this.playPauseBtn.classList.toggle('is-playing', isPlaying);
     this.playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause audio' : 'Play audio');
     this.playPauseBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
   }
