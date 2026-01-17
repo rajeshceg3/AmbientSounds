@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite';
-import eslint from 'vite-plugin-eslint';
 
 export default defineConfig({
-  plugins: [eslint()],
+  plugins: [],
   // Ensure the root is correctly set if you moved files to src
   // root: 'src', // If index.html is also in src
   build: {

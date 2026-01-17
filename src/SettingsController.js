@@ -2,7 +2,7 @@
 
 const DEFAULTS = {
   soundEnabled: true,
-  selectedSound: 'Peaceful And Relaxing', // Default to 'Peaceful And Relaxing' or the first available sound
+  selectedSound: 'Rain', // Default to 'Rain'
   volume: 0.75, // Default volume (0 to 1)
   visualEnabled: true, // If background visuals can be turned off entirely
   reducedMotion: false, // For background animations

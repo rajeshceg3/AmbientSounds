@@ -2,7 +2,7 @@
 module.exports = {
   testEnvironment: 'jest-environment-jsdom',
   roots: ['<rootDir>/src'],
-  setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'], // For DOM matchers
+  setupFilesAfterEnv: ['@testing-library/jest-dom'], // For DOM matchers
   // If main.js or other files use CSS imports that Jest can't handle:
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy', // Mocks CSS imports
