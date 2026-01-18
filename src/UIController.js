@@ -152,25 +152,48 @@ class UIController {
     this._resetActivityTimer(); // Initial timer setup
   }
 
+  // --- Haptic Feedback Helper ---
+  triggerHapticFeedback(pattern = [10]) {
+    if (navigator.vibrate) {
+        navigator.vibrate(pattern);
+    }
+  }
+
   // --- Event Binding ---
   bindPlayPauseButton(callback) {
     if (!this.playPauseBtn) return;
-    this.playPauseBtn.addEventListener('click', callback);
+    this.playPauseBtn.addEventListener('click', (e) => {
+        this.triggerHapticFeedback([15]); // Sharp tick
+        callback(e);
+    });
   }
 
   bindSoundSelect(callback) {
     if (!this.soundSelect) return;
-    this.soundSelect.addEventListener('change', callback);
+    this.soundSelect.addEventListener('change', (e) => {
+        this.triggerHapticFeedback([10]);
+        callback(e);
+    });
   }
 
   bindReducedMotionToggle(callback) {
     if (!this.reducedMotionToggle) return;
-    this.reducedMotionToggle.addEventListener('change', callback);
+    this.reducedMotionToggle.addEventListener('change', (e) => {
+        this.triggerHapticFeedback([10]);
+        callback(e);
+    });
   }
 
   bindVolumeSlider(callback) {
     if (!this.volumeSlider) return;
-    this.volumeSlider.addEventListener('input', callback);
+    this.volumeSlider.addEventListener('input', (e) => {
+        // Debounce vibration for slider to avoid buzzing
+        if (!this._lastVibration || Date.now() - this._lastVibration > 50) {
+            this.triggerHapticFeedback([5]);
+            this._lastVibration = Date.now();
+        }
+        callback(e);
+    });
   }
 
   bindGlobalSpacebar(callback) {
