@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; media-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Ambient Mood</title>
     <!-- Google Fonts: Inter and Material Symbols Rounded -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,28 +16,37 @@
 <body>
     <div id="app">
         <div class="background-shifter"></div>
+        <div class="noise-overlay"></div>
 
         <div class="controls glass-panel">
+            <div class="mobile-drag-handle"></div>
+
             <div class="controls-top">
                 <button id="play-pause-btn" class="icon-btn big-play" aria-label="Play or pause audio" aria-pressed="false">
                     <span class="material-symbols-rounded">play_arrow</span>
+                    <div class="play-ripple"></div>
                 </button>
 
-                <div class="sound-selector-wrapper">
-                    <select id="sound-select" aria-label="Select ambient sound">
-                        <option value="rain">Rain</option>
-                        <option value="ocean">Ocean Waves</option>
-                        <option value="forest">Forest</option>
-                        <option value="whitenoise">White Noise</option>
-                    </select>
-                    <span class="material-symbols-rounded dropdown-arrow">expand_more</span>
+                <div class="sound-selector-custom" id="sound-selector-custom">
+                    <button class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select ambient sound">
+                        <span class="selected-value">Select Sound</span>
+                        <span class="material-symbols-rounded dropdown-arrow">expand_more</span>
+                    </button>
+                    <ul class="custom-select-options" role="listbox" id="sound-options-list">
+                        <!-- Options will be populated by JS -->
+                    </ul>
                 </div>
             </div>
 
             <div class="controls-bottom">
                 <div class="volume-wrapper">
-                    <span class="material-symbols-rounded volume-icon">volume_up</span>
-                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.75" aria-label="Volume">
+                    <button class="volume-btn" aria-label="Mute/Unmute">
+                        <span class="material-symbols-rounded volume-icon">volume_up</span>
+                    </button>
+                    <div class="slider-container">
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.75" aria-label="Volume">
+                        <div class="slider-fill"></div>
+                    </div>
                 </div>
 
                 <div class="control-group toggle-group">

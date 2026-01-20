@@ -1,29 +1,32 @@
 /* Reset & Base */
 :root {
-  /* Color Palette */
-  --bg-color: #0a0a0c;
-  --text-main: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.65);
-  --text-dim: rgba(255, 255, 255, 0.4);
+  /* Color Palette - Deep & Rich */
+  --bg-color: #050507;
+  --text-main: #f0f0f2;
+  --text-muted: rgba(240, 240, 242, 0.6);
+  --text-dim: rgba(240, 240, 242, 0.3);
+  --accent-glow: rgba(255, 255, 255, 0.15);
 
-  /* Glassmorphism Variables */
-  --glass-bg: rgba(20, 20, 25, 0.6);
+  /* Glassmorphism Variables - Premium Frosted */
+  --glass-bg: rgba(18, 18, 24, 0.65);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.15);
-  --glass-blur: 32px;
+  --glass-highlight: rgba(255, 255, 255, 0.1);
+  --glass-blur: 40px;
   --glass-shadow:
-    0 24px 48px -12px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    0 32px 64px -16px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
 
   /* Controls */
-  --control-bg: rgba(255, 255, 255, 0.06);
-  --control-bg-hover: rgba(255, 255, 255, 0.12);
-  --control-border: rgba(255, 255, 255, 0.1);
+  --control-bg: rgba(255, 255, 255, 0.04);
+  --control-bg-hover: rgba(255, 255, 255, 0.08);
+  --control-border: rgba(255, 255, 255, 0.08);
   --control-radius: 16px;
+  --focus-ring: 0 0 0 2px rgba(255, 255, 255, 0.3);
 
   /* Animation */
   --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
 
   /* Typography */
   --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -53,8 +56,9 @@ html, body {
   height: 100%;
   display: flex;
   justify-content: center;
-  align-items: flex-end; /* Mobile default: bottom aligned */
+  align-items: flex-end;
   z-index: 1;
+  perspective: 1000px; /* For 3D tilt */
 }
 
 /* Background Shifter */
@@ -69,13 +73,14 @@ html, body {
   transition: background-color 8s linear;
 }
 
-/* Subtle overlay gradient for depth */
-.background-shifter::after {
-  content: '';
+/* Noise Overlay */
+.noise-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 60%);
+  z-index: 0;
+  opacity: 0.035;
   pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
 }
 
 /* Glass Panel Container */
@@ -89,18 +94,20 @@ html, body {
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   z-index: 10;
+  transform-style: preserve-3d;
+  will-change: transform;
   transition:
     opacity 0.6s var(--ease-out-expo),
-    transform 0.6s var(--ease-out-expo),
+    transform 0.1s linear, /* Faster for tilt */
     visibility 0s linear 0s;
 
-  /* Subtle inner light source from top-left */
-  background-image: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 40%);
+  /* Inner subtle gradient */
+  background-image: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, transparent 60%);
 }
 
 .controls.hidden {
   opacity: 0;
-  transform: translateY(32px) scale(0.96);
+  transform: translateY(40px) scale(0.95);
   visibility: hidden;
   transition:
     opacity 0.5s ease,
@@ -110,11 +117,22 @@ html, body {
 
 /* --- Components --- */
 
+/* Mobile Drag Handle */
+.mobile-drag-handle {
+  display: none; /* Desktop default */
+  width: 36px;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+  margin: 0 auto;
+  flex-shrink: 0;
+}
+
 /* Play Button */
 .icon-btn.big-play {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   border: none;
   background: #ffffff;
@@ -123,100 +141,152 @@ html, body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  overflow: hidden; /* For ripple */
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.2),
-    0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.4s var(--ease-elastic), box-shadow 0.3s ease, filter 0.3s ease;
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255,255,255,0.1);
+  transition: transform 0.4s var(--ease-elastic), box-shadow 0.3s ease;
+  transform: translateZ(20px); /* Lift in 3D */
 }
 
 .icon-btn.big-play:hover {
-  transform: scale(1.05);
+  transform: scale(1.05) translateZ(20px);
   box-shadow:
-    0 12px 32px rgba(255, 255, 255, 0.25),
+    0 16px 40px rgba(255, 255, 255, 0.15),
     0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .icon-btn.big-play:active {
-  transform: scale(0.94);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: scale(0.95) translateZ(10px);
+}
+
+.icon-btn.big-play:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
 }
 
 .icon-btn.big-play .material-symbols-rounded {
-  font-size: 32px;
-  font-weight: 600;
+  font-size: 36px;
+  font-weight: 500;
+  z-index: 2;
   font-variation-settings: 'FILL' 1;
 }
 
-/* Play State Pulse */
-.icon-btn.big-play.is-playing {
-  animation: breathe 4s infinite ease-in-out;
+/* Custom Dropdown */
+.sound-selector-custom {
+  position: relative;
+  width: 220px;
+  height: 56px;
+  font-family: inherit;
+  perspective: 800px;
+  z-index: 20; /* Ensure dropdown goes over other things */
 }
 
-@keyframes breathe {
-  0%, 100% { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 0 0 0 rgba(255, 255, 255, 0); }
-  50% { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), 0 0 0 8px rgba(255, 255, 255, 0.05); }
-}
-
-/* Sound Selector */
-.sound-selector-wrapper {
+.custom-select-trigger {
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--control-bg);
-  border: 1px solid var(--control-border);
-  border-radius: 12px;
-  padding: 0 16px;
-  height: 52px;
-  min-width: 180px;
-  flex-grow: 1;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.sound-selector-wrapper:hover {
-  background: var(--control-bg-hover);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.sound-selector-wrapper:focus-within {
-  background: var(--control-bg-hover);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
-}
-
-#sound-select {
-  appearance: none;
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 500;
+  justify-content: space-between;
   width: 100%;
   height: 100%;
+  background: var(--control-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 14px;
+  padding: 0 20px;
   cursor: pointer;
-  outline: none;
-  padding-right: 32px;
-  letter-spacing: 0.01em;
-}
-
-#sound-select option {
-  background-color: #1a1a1e;
-  color: #fff;
-  padding: 12px;
-}
-
-.dropdown-arrow {
-  position: absolute;
-  right: 14px;
-  color: var(--text-muted);
-  pointer-events: none;
-  font-size: 20px;
-  transition: transform 0.3s var(--ease-elastic), color 0.2s ease;
-}
-
-.sound-selector-wrapper:hover .dropdown-arrow {
   color: var(--text-main);
-  transform: translateY(1px);
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.custom-select-trigger:hover {
+  background: var(--control-bg-hover);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.custom-select-trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.custom-select-trigger[aria-expanded="true"] {
+  background: var(--control-bg-hover);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.custom-select-trigger .dropdown-arrow {
+  color: var(--text-muted);
+  transition: transform 0.3s var(--ease-elastic);
+}
+
+.custom-select-trigger[aria-expanded="true"] .dropdown-arrow {
+  transform: rotate(180deg);
+  color: var(--text-main);
+}
+
+.custom-select-options {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #18181b; /* Solid dark background for readability */
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 6px;
+  list-style: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) scale(0.96);
+  transform-origin: top center;
+  transition: all 0.2s var(--ease-out-expo);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(255,255,255,0.05) inset;
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.custom-select-options.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.custom-select-options li {
+  padding: 10px 14px;
+  margin-bottom: 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.custom-select-options li:last-child {
+  margin-bottom: 0;
+}
+
+.custom-select-options li:hover, .custom-select-options li.focused {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-main);
+}
+
+.custom-select-options li.selected {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-weight: 500;
+}
+
+.custom-select-options li.selected::after {
+  content: 'check';
+  font-family: 'Material Symbols Rounded';
+  font-size: 16px;
 }
 
 /* Volume Control */
@@ -225,48 +295,64 @@ html, body {
   align-items: center;
   gap: 16px;
   flex: 1;
-  height: 52px; /* Align height */
+  height: 56px;
 }
 
-.volume-icon {
+.volume-btn {
+  background: none;
+  border: none;
   color: var(--text-muted);
-  font-size: 20px;
-  transition: color 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
-.volume-wrapper:hover .volume-icon {
+.volume-btn:hover {
   color: var(--text-main);
+  background: rgba(255,255,255,0.05);
+}
+
+.slider-container {
+  position: relative;
+  width: 100%;
+  height: 48px; /* Taller touch target area */
+  display: flex;
+  align-items: center;
 }
 
 #volume-slider {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 4px;
+  height: 6px;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 99px;
   outline: none;
   cursor: pointer;
   /* Glowing fill */
-  background-image: linear-gradient(to right, #ffffff, #e0e0e0);
-  background-size: 75% 100%; /* JS updates this */
+  background-image: linear-gradient(90deg, #ffffff, #e0e0e0);
+  background-size: 75% 100%;
   background-repeat: no-repeat;
   transition: height 0.2s ease;
 }
 
 #volume-slider:hover {
-  height: 6px;
+  height: 8px;
 }
 
-/* Thumb */
 #volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #ffffff;
   cursor: grab;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
   transition: transform 0.2s var(--ease-elastic), box-shadow 0.2s ease;
   margin-top: 0;
 }
@@ -282,22 +368,11 @@ html, body {
   box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.12);
 }
 
-#volume-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border: none;
-  border-radius: 50%;
-  background: #ffffff;
-  cursor: grab;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  transition: transform 0.2s var(--ease-elastic);
-}
-
 /* Reduced Motion Toggle */
 .toggle-group {
   display: flex;
   align-items: center;
-  height: 52px;
+  height: 56px;
 }
 
 .toggle-checkbox {
@@ -317,11 +392,11 @@ html, body {
 }
 
 .toggle-text {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   transition: color 0.2s ease;
 }
 
@@ -332,7 +407,7 @@ html, body {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 99px;
   transition: background-color 0.3s ease;
-  border: 1px solid transparent;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 .toggle-switch::after {
@@ -342,10 +417,10 @@ html, body {
   left: 2px;
   width: 18px;
   height: 18px;
-  background-color: #fff;
+  background-color: #d1d1d6;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  transition: transform 0.4s var(--ease-elastic);
+  transition: transform 0.4s var(--ease-elastic), background-color 0.2s ease;
 }
 
 .toggle-checkbox:checked + .toggle-label .toggle-text {
@@ -353,67 +428,66 @@ html, body {
 }
 
 .toggle-checkbox:checked + .toggle-label .toggle-switch {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
 .toggle-checkbox:checked + .toggle-label .toggle-switch::after {
   transform: translateX(20px);
+  background-color: #fff;
+}
+
+.toggle-checkbox:focus-visible + .toggle-label .toggle-switch {
+    box-shadow: var(--focus-ring);
 }
 
 
-/* --- DESKTOP SPECIFIC OPTIMIZATIONS (Landscape / Large Screens) --- */
+/* --- DESKTOP HYPER-OPTIMIZATION --- */
 @media (min-width: 768px) {
   #app {
-    align-items: flex-end;
-    padding-bottom: 48px; /* Lift off the bottom */
+    padding-bottom: 64px;
   }
 
   .controls.glass-panel {
     flex-direction: row;
     align-items: center;
     width: auto;
-    min-width: 720px;
-    padding: 24px 32px;
-    gap: 40px;
-    border-radius: 24px;
+    min-width: 760px;
+    padding: 24px 40px;
+    gap: 48px;
+    border-radius: 28px;
   }
 
-  /* Layout */
+  /* Desktop Tilt Effect will be applied via JS to .controls.glass-panel */
+
   .controls-top {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 32px;
     flex: 2;
   }
 
-  /* Vertical Divider */
+  /* Elegant Divider */
   .controls-top::after {
     content: '';
     display: block;
     width: 1px;
-    height: 32px;
-    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.15), transparent);
-    margin-left: 16px;
+    height: 36px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.12), transparent);
+    margin-left: 12px;
   }
 
   .controls-bottom {
     display: flex;
     align-items: center;
-    gap: 32px;
+    gap: 40px;
     flex: 3;
     justify-content: flex-end;
-  }
-
-  /* Desktop Hover Polish */
-  .sound-selector-wrapper:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
 }
 
 
-/* --- MOBILE SPECIFIC OPTIMIZATIONS (Portrait / Touch Devices) --- */
+/* --- MOBILE HYPER-OPTIMIZATION --- */
 @media (max-width: 767px) {
   #app {
     padding-bottom: 0;
@@ -423,77 +497,83 @@ html, body {
     width: 100%;
     margin-bottom: 0;
 
-    /* Sheet Styling */
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-top-left-radius: 32px;
-    border-top-right-radius: 32px;
+    /* Native Sheet Feel */
+    border-radius: 36px 36px 0 0;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
 
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    /* Opaque blur for better legibility over any background */
+    background: rgba(18, 18, 22, 0.85);
+    backdrop-filter: blur(50px);
 
-    /* Spacing */
-    padding: 32px 24px calc(24px + env(safe-area-inset-bottom)) 24px;
-    gap: 32px;
-
-    background: rgba(18, 18, 22, 0.85); /* Slightly darker/more opaque for legibility */
+    padding: 16px 24px calc(24px + env(safe-area-inset-bottom)) 24px;
+    gap: 28px;
   }
 
-  /* Mobile Layout */
+  .mobile-drag-handle {
+    display: block;
+    margin-bottom: 8px;
+  }
+
   .controls-top {
     display: flex;
-    justify-content: space-between; /* Play button left, Dropdown right */
+    justify-content: space-between;
     align-items: center;
     gap: 20px;
     width: 100%;
   }
 
-  /* Make play button prominent but touch-friendly */
+  /* Play button smaller on mobile to balance */
   .icon-btn.big-play {
-    width: 56px;
-    height: 56px;
-    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
   }
 
-  .sound-selector-wrapper {
+  .sound-selector-custom {
     flex-grow: 1;
-    height: 56px;
-    border-radius: 16px;
+    height: 60px;
+    width: auto; /* Allow grow */
   }
 
-  /* Stacked Bottom Section */
+  .custom-select-trigger {
+    border-radius: 18px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* Dropdown on mobile should ideally be a bottom sheet or a modal,
+     but for now we'll style it to pop UP significantly */
+  .custom-select-options {
+    bottom: 100%;
+    top: auto;
+    margin-bottom: 8px;
+    max-height: 50vh;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: #1f1f24;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
+  }
+
+  /* Stack Controls */
   .controls-bottom {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 24px;
     width: 100%;
   }
 
   .volume-wrapper {
     width: 100%;
-    height: auto;
-    padding: 0 4px;
+    background: rgba(255,255,255,0.03);
+    padding: 0 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.05);
   }
 
-  /* Bigger Slider for Thumb */
-  #volume-slider {
-    height: 6px;
-  }
-
-  #volume-slider::-webkit-slider-thumb {
-    width: 28px;
-    height: 28px; /* Fat thumb for touch */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  }
-
-  /* Toggle Row */
+  /* Toggle */
   .toggle-group {
     justify-content: space-between;
     width: 100%;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 4px;
   }
 
   .toggle-label {
@@ -503,7 +583,7 @@ html, body {
   }
 }
 
-/* Error Message Toast */
+/* Utilities */
 .error-message {
   font-size: 14px;
   font-weight: 500;
@@ -514,4 +594,32 @@ html, body {
   box-shadow: 0 12px 32px rgba(0,0,0,0.5) !important;
   padding: 12px 24px !important;
   border-radius: 12px !important;
+}
+
+/* Ripple Effect */
+.play-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 1;
+}
+
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 200%;
+    height: 200%;
+    opacity: 0;
+  }
 }
