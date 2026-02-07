@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function initializeAudio() {
     if (!audioInitialized) {
       try {
-        await audioController.init();
+        await audioController.init(initialSound);
         audioInitialized = true;
         console.log('Audio system initialized successfully on user gesture.');
         // If there's a selected sound, try to play it if settings say sound is enabled
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!audioInitialized) return;
 
-    const selectedSoundName = uiController.soundSelect.value || initialSound;
+    const selectedSoundName = settingsController.getSelectedSound() || initialSound;
     if (!selectedSoundName) {
         console.warn("No sound selected to play.");
         uiController.displayError("Please select a sound first.");

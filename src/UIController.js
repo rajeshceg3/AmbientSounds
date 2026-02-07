@@ -97,8 +97,11 @@ class UIController {
       options.forEach(opt => opt.classList.remove('focused'));
       if (option) {
           option.classList.add('focused');
+          this.customSelectOptionsList.setAttribute('aria-activedescendant', option.id);
           option.scrollIntoView({ block: 'nearest' });
           // Ensure visual focus style in CSS matches .focused
+      } else {
+          this.customSelectOptionsList.removeAttribute('aria-activedescendant');
       }
   }
 
@@ -169,6 +172,7 @@ class UIController {
 
     soundSources.forEach(sound => {
       const li = document.createElement('li');
+      li.id = `option-${sound.name.replace(/\s+/g, '-').toLowerCase()}`;
       li.textContent = sound.name; // assuming sound.name is Display Name
       li.setAttribute('data-value', sound.name);
       li.setAttribute('role', 'option');
