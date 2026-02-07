@@ -48,6 +48,15 @@ class SettingsController {
   }
 
   set(key, value) {
+    if (key === 'volume' && (typeof value !== 'number' || value < 0 || value > 1)) {
+      console.warn(`SettingsController: Invalid volume value "${value}". Must be between 0 and 1.`);
+      return;
+    }
+    if (key === 'selectedSound' && (!value || typeof value !== 'string')) {
+      console.warn(`SettingsController: Invalid selectedSound value "${value}".`);
+      return;
+    }
+
     if (key in this.settings) {
       this.settings[key] = value;
       this.saveSettings();

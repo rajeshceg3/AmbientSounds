@@ -32,7 +32,7 @@ class AudioController {
   }
 
   // Initialize the AudioContext (must be called after a user interaction)
-  async init() {
+  async init(initialSoundName = null) {
     if (this.audioContext || this.initPromise) return this.initPromise;
 
     this.initPromise = (async () => {
@@ -46,7 +46,7 @@ class AudioController {
         this.gainNode.connect(this.audioContext.destination);
 
         // Preload all sounds once context is ready
-        await this.preloadAllSounds();
+        await this.preloadAllSounds(initialSoundName);
       } catch (error) {
         console.error('Failed to initialize AudioContext:', error);
         this.initPromise = null; // Reset for future attempts
@@ -87,24 +87,46 @@ class AudioController {
     }
   }
 
-  async preloadAllSounds() {
-    if (!this.audioContext) await this.init();
+  async preloadAllSounds(initialSoundName = null) {
+    if (!this.audioContext) await this.init(initialSoundName);
     if (!this.audioContext) {
         console.error("Cannot preload sounds, AudioContext not available.");
         return;
     }
 
-    console.log('Preloading all sounds...');
-    const loadPromises = soundSources.map(sound =>
-      this.loadSound(sound.name, sound.url).catch(err => {
-        // Log individual errors but don't let one failure stop others if desired
-        console.error(`Failed to preload ${sound.name}: ${err.message}`);
-        return null; // Or rethrow if all must succeed
-      })
-    );
-    this.preloadPromise = Promise.all(loadPromises);
-    await this.preloadPromise;
-    console.log('All sounds preloading process completed.');
+    console.log('Preloading sounds...');
+
+    // 1. Load the initial sound immediately if provided
+    if (initialSoundName) {
+        const sound = soundSources.find(s => s.name === initialSoundName);
+        if (sound) {
+            console.log(`Preloading initial sound: ${initialSoundName}`);
+            try {
+                await this.loadSound(sound.name, sound.url);
+            } catch (err) {
+                console.error(`Failed to preload initial sound ${initialSoundName}: ${err.message}`);
+            }
+        }
+    }
+
+    // 2. Load the rest in the background after a delay
+    setTimeout(async () => {
+        console.log('Starting background preload of remaining sounds...');
+        const remainingSounds = soundSources.filter(s => s.name !== initialSoundName);
+
+        const loadPromises = remainingSounds.map(sound =>
+          this.loadSound(sound.name, sound.url).catch(err => {
+            console.error(`Failed to background load ${sound.name}: ${err.message}`);
+            return null;
+          })
+        );
+
+        await Promise.all(loadPromises);
+        console.log('Background sound loading completed.');
+    }, 3000); // 3 seconds delay
+
+    // We consider "preloading" complete for the init phase once the initial sound is ready (or skipped)
+    this.preloadPromise = Promise.resolve();
   }
 
   async play(soundName) {
